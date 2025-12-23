@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="streamingAnalyticsPU" transaction-type="JTA">
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+
+        <class>org.example.tpstreaminganalytics.entity.ViewEvent</class>
+        <class>org.example.tpstreaminganalytics.entity.VideoStats</class>
+        <class>org.example.tpstreaminganalytics.entity.UserProfile</class>
+        <class>org.example.tpstreaminganalytics.entity.Video</class>
+
+        <properties>
+            <!-- Configuration MongoDB -->
+            <property name="hibernate.ogm.datastore.provider" value="mongodb"/>
+            <property name="hibernate.ogm.datastore.database" value="streaming_analytics"/>
+            <property name="hibernate.ogm.datastore.host" value="localhost"/>
+            <property name="hibernate.ogm.datastore.port" value="27017"/>
+
+            <!-- Auto-create collections -->
+            <property name="hibernate.ogm.datastore.create_database" value="true"/>
+
+            <property name="hibernate.ogm.datastore.username" value="admin"/>
+            <property name="hibernate.ogm.datastore.password" value="admin123"/>
+            <property name="hibernate.ogm.datastore.authentication_database" value="admin"/>
+
+            <!-- Strategy de mapping -->
+            <property name="hibernate.ogm.mongodb.association_document_storage" value="ASSOCIATION_DOCUMENT"/>
+
+            <!-- Logging pour debug -->
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.use_sql_comments" value="true"/>
+
+            <!-- Validation -->
+            <property name="jakarta.persistence.validation.mode" value="none"/>
+
+            <!-- Optimisations -->
+            <property name="hibernate.jdbc.batch_size" value="50"/>
+            <property name="hibernate.order_inserts" value="true"/>
+            <property name="hibernate.order_updates" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>
