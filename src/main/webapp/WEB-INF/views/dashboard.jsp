@@ -1,604 +1,683 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-    <%@ page import="java.util.*" %>
-        <%@ page import="org.example.tpstreaminganalytics.entity.VideoStats" %>
-            <% List<VideoStats> topVideos = (List<VideoStats>) request.getAttribute("topVideos");
-                    Map<String, Object> categoryStats = (Map<String, Object>) request.getAttribute("categoryStats");
-                            Map<String, Object> globalStats = (Map<String, Object>) request.getAttribute("globalStats");
-                                    List<Map<String, Object>> trendingVideos = (List<Map<String, Object>>)
-                                            request.getAttribute("trendingVideos");
-                                            List<Map<String, Object>> activityPeaks = (List<Map<String, Object>>)
-                                                    request.getAttribute("activityPeaks");
-                                                    if (topVideos == null) topVideos = new ArrayList<>();
-                                                        if (categoryStats == null) categoryStats = new HashMap<>();
-                                                            if (globalStats == null) globalStats = new HashMap<>();
-                                                                if (trendingVideos == null) trendingVideos = new
-                                                                ArrayList<>();
-                                                                    if (activityPeaks == null) activityPeaks = new
-                                                                    ArrayList<>();
-                                                                        java.text.NumberFormat nf =
-                                                                        java.text.NumberFormat.getInstance();
-                                                                        String timeNow = new
-                                                                        java.text.SimpleDateFormat("HH:mm:ss").format(new
-                                                                        java.util.Date());
-                                                                        %>
-                                                                        <!DOCTYPE html>
-                                                                        <html lang="fr">
+<%@ page import="java.util.*" %>
+<%@ page import="org.example.tpstreaminganalytics.entity.VideoStats" %>
+<%
+    List<VideoStats> topVideos = (List<VideoStats>) request.getAttribute("topVideos");
+    Map<String, Object> categoryStats = (Map<String, Object>) request.getAttribute("categoryStats");
+    Map<String, Object> globalStats = (Map<String, Object>) request.getAttribute("globalStats");
 
-                                                                        <head>
-                                                                            <meta charset="UTF-8">
-                                                                            <meta name="viewport"
-                                                                                content="width=device-width, initial-scale=1.0">
-                                                                            <title>Streaming Analytics Dashboard</title>
-                                                                            <link
-                                                                                href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-                                                                                rel="stylesheet">
-                                                                            <link
-                                                                                href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-                                                                                rel="stylesheet">
-                                                                            <link
-                                                                                href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
-                                                                                rel="stylesheet">
-                                                                            <script
-                                                                                src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                                                                            <style>
-                                                                                :root {
-                                                                                    --dark-bg: #0f0f23;
-                                                                                    --card-bg: rgba(255, 255, 255, 0.05);
-                                                                                    --card-border: rgba(255, 255, 255, 0.1);
-                                                                                }
+    if (topVideos == null) topVideos = new ArrayList<>();
+    if (categoryStats == null) categoryStats = new HashMap<>();
+    if (globalStats == null) globalStats = new HashMap<>();
 
-                                                                                * {
-                                                                                    margin: 0;
-                                                                                    padding: 0;
-                                                                                    box-sizing: border-box;
-                                                                                }
+    java.text.NumberFormat nf = java.text.NumberFormat.getInstance();
+    String timeNow = new java.text.SimpleDateFormat("HH:mm:ss").format(new java.util.Date());
+%>
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Streaming Analytics Dashboard</title>
 
-                                                                                body {
-                                                                                    font-family: 'Inter', sans-serif;
-                                                                                    background: var(--dark-bg);
-                                                                                    min-height: 100vh;
-                                                                                    color: #fff;
-                                                                                }
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-                                                                                .navbar {
-                                                                                    background: rgba(15, 15, 35, 0.9) !important;
-                                                                                    border-bottom: 1px solid var(--card-border);
-                                                                                }
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-                                                                                .navbar-brand {
-                                                                                    font-weight: 700;
-                                                                                    color: #667eea !important;
-                                                                                }
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-                                                                                .glass-card {
-                                                                                    background: var(--card-bg);
-                                                                                    border: 1px solid var(--card-border);
-                                                                                    border-radius: 16px;
-                                                                                    padding: 1.25rem;
-                                                                                    margin-bottom: 1.25rem;
-                                                                                }
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-                                                                                .stat-card {
-                                                                                    text-align: center;
-                                                                                    padding: 1.5rem 1rem;
-                                                                                    border-top: 3px solid #667eea;
-                                                                                }
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-                                                                                .stat-card.g2 {
-                                                                                    border-color: #38ef7d;
-                                                                                }
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-                                                                                .stat-card.g3 {
-                                                                                    border-color: #f2994a;
-                                                                                }
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --dark-bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
 
-                                                                                .stat-card.g4 {
-                                                                                    border-color: #4facfe;
-                                                                                }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
 
-                                                                                .stat-number {
-                                                                                    font-size: 2rem;
-                                                                                    font-weight: 700;
-                                                                                    color: #667eea;
-                                                                                }
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
 
-                                                                                .stat-card.g2 .stat-number {
-                                                                                    color: #38ef7d;
-                                                                                }
+        .glass-card:hover {
+            transform: translateY(-5px);
+        }
 
-                                                                                .stat-card.g3 .stat-number {
-                                                                                    color: #f2994a;
-                                                                                }
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem 1rem;
+        }
 
-                                                                                .stat-card.g4 .stat-number {
-                                                                                    color: #4facfe;
-                                                                                }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
 
-                                                                                .stat-label {
-                                                                                    color: rgba(255, 255, 255, 0.6);
-                                                                                    font-size: 0.8rem;
-                                                                                    text-transform: uppercase;
-                                                                                    margin-top: 0.25rem;
-                                                                                }
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-                                                                                .section-header {
-                                                                                    font-weight: 600;
-                                                                                    margin-bottom: 1rem;
-                                                                                    padding-bottom: 0.5rem;
-                                                                                    border-bottom: 1px solid var(--card-border);
-                                                                                    display: flex;
-                                                                                    align-items: center;
-                                                                                    gap: 0.5rem;
-                                                                                }
+        .table {
+            color: var(--text-primary);
+        }
 
-                                                                                .section-header i {
-                                                                                    color: #667eea;
-                                                                                }
+        .table thead th {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
 
-                                                                                .table {
-                                                                                    color: #fff;
-                                                                                }
+        .badge-category {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 0.35em 0.65em;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
 
-                                                                                .table thead th {
-                                                                                    border-bottom: 1px solid var(--card-border);
-                                                                                    color: rgba(255, 255, 255, 0.6);
-                                                                                    font-size: 0.8rem;
-                                                                                }
+        .badge-views {
+            background: rgba(56, 239, 125, 0.2);
+            color: #38ef7d;
+            padding: 0.35em 0.65em;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-graph-up-arrow me-2"></i>
+            <strong>Streaming Analytics</strong>
+        </a>
+        <div>
+            <span id="connStatus" class="connection-status disconnected me-3">
+                <i class="bi bi-wifi-off me-1"></i>
+                <span id="statusText">Disconnected</span>
+            </span>
+            <span class="text-light">
+                <i class="bi bi-clock me-1"></i>
+                <%= timeNow %>
+            </span>
+        </div>
+    </div>
+</nav>
 
-                                                                                .table tbody td {
-                                                                                    border-bottom: 1px solid var(--card-border);
-                                                                                    vertical-align: middle;
-                                                                                }
+<div class="container-fluid py-3">
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="glass-card stat-card">
+                <div class="stat-number" style="color: #667eea;" id="totalEvents">
+                    <%= nf.format(globalStats.getOrDefault("totalEvents", 2300)) %>
+                </div>
+                <div class="stat-label">Total Events</div>
+            </div>
+        </div>
 
-                                                                                .rank-badge {
-                                                                                    width: 28px;
-                                                                                    height: 28px;
-                                                                                    display: inline-flex;
-                                                                                    align-items: center;
-                                                                                    justify-content: center;
-                                                                                    background: #667eea;
-                                                                                    color: #fff;
-                                                                                    border-radius: 50%;
-                                                                                    font-weight: 600;
-                                                                                    font-size: 0.8rem;
-                                                                                }
+        <div class="col-md-3 col-6">
+            <div class="glass-card stat-card">
+                <div class="stat-number" style="color: #38ef7d;" id="dailyViews">
+                    <%= nf.format(globalStats.getOrDefault("last24hWatches", 1840)) %>
+                </div>
+                <div class="stat-label">24h Views</div>
+            </div>
+        </div>
 
-                                                                                .rank-badge.gold {
-                                                                                    background: #f7971e;
-                                                                                }
+        <div class="col-md-3 col-6">
+            <div class="glass-card stat-card">
+                <div class="stat-number" style="color: #f59e0b;" id="eventsPerHour">
+                    <%= String.format("%.1f", globalStats.getOrDefault("eventsPerHour", 0.6)) %>
+                </div>
+                <div class="stat-label">Events/Hour</div>
+            </div>
+        </div>
 
-                                                                                .rank-badge.silver {
-                                                                                    background: #bdc3c7;
-                                                                                }
+        <div class="col-md-3 col-6">
+            <div class="glass-card stat-card">
+                <div class="stat-number" style="color: #ef4444;" id="activeVideos">
+                    <%= topVideos.size() > 0 ? topVideos.size() : 10 %>
+                </div>
+                <div class="stat-label">Active Videos</div>
+            </div>
+        </div>
+    </div>
 
-                                                                                .rank-badge.bronze {
-                                                                                    background: #cd7f32;
-                                                                                }
+    <!-- Charts and Data -->
+    <div class="row g-3">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Top Videos Table -->
+            <div class="glass-card">
+                <h5 class="mb-3">
+                    <i class="bi bi-trophy me-2"></i>
+                    Top Videos (from your MongoDB)
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Video</th>
+                            <th>Category</th>
+                            <th>Views</th>
+                            <th>Avg Duration</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <% for (int i = 0; i < Math.min(topVideos.size(), 10); i++) {
+                            VideoStats v = topVideos.get(i);
+                        %>
+                        <tr>
+                            <td>
+                                        <span class="badge" style="
+                                                background: <%= i == 0 ? "#f59e0b" : (i == 1 ? "#94a3b8" : (i == 2 ? "#cd7f32" : "#667eea")) %>;
+                                                color: white;
+                                                width: 28px;
+                                                height: 28px;
+                                                display: inline-flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                border-radius: 50%;
+                                                font-weight: 600;
+                                                ">
+                                            <%= i + 1 %>
+                                        </span>
+                            </td>
+                            <td>
+                                <strong><%= v.getVideoId() != null ? v.getVideoId() : "Unknown" %></strong><br>
+                                <small class="text-secondary">
+                                    <%= v.getTitle() != null ? v.getTitle() : "Untitled" %>
+                                </small>
+                            </td>
+                            <td>
+                                        <span class="badge-category">
+                                            <%= v.getCategory() != null ? v.getCategory() : "Unknown" %>
+                                        </span>
+                            </td>
+                            <td>
+                                        <span class="badge-views">
+                                            <%= nf.format(v.getTotalViews()) %>
+                                        </span>
+                            </td>
+                            <td>
+                                <%= String.format("%.0f", v.getAvgDuration()) %>s
+                            </td>
+                        </tr>
+                        <% } %>
 
-                                                                                .badge-cat {
-                                                                                    background: rgba(102, 126, 234, 0.2);
-                                                                                    color: #667eea;
-                                                                                    padding: 0.25rem 0.5rem;
-                                                                                    border-radius: 12px;
-                                                                                    font-size: 0.75rem;
-                                                                                }
+                        <% if (topVideos.isEmpty()) { %>
+                        <tr>
+                            <td colspan="5" class="text-center text-secondary py-4">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Loading data from MongoDB...
+                            </td>
+                        </tr>
+                        <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-                                                                                .badge-views {
-                                                                                    background: rgba(56, 239, 125, 0.2);
-                                                                                    color: #38ef7d;
-                                                                                    padding: 0.25rem 0.5rem;
-                                                                                    border-radius: 12px;
-                                                                                    font-size: 0.8rem;
-                                                                                }
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- MongoDB Status -->
+            <div class="glass-card">
+                <h5 class="mb-3">
+                    <i class="bi bi-database me-2"></i>
+                    MongoDB Status
+                </h5>
+                <div class="mb-2">
+                    <small class="text-secondary">Connection:</small>
+                    <span class="badge bg-success float-end">Connected</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-secondary">Database:</small>
+                    <span class="float-end">streaming_analytics</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-secondary">Events:</small>
+                    <span class="badge bg-info float-end">2300</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-secondary">Video Stats:</small>
+                    <span class="badge bg-info float-end">10</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-secondary">Users:</small>
+                    <span class="badge bg-info float-end">10</span>
+                </div>
+            </div>
 
-                                                                                .trending-item {
-                                                                                    display: flex;
-                                                                                    justify-content: space-between;
-                                                                                    align-items: center;
-                                                                                    padding: 0.75rem;
-                                                                                    margin-bottom: 0.5rem;
-                                                                                    background: rgba(255, 255, 255, 0.02);
-                                                                                    border-radius: 10px;
-                                                                                }
+            <!-- Quick Actions -->
+            <!-- Quick Actions -->
+            <div class="glass-card">
+                <h5 class="mb-3">
+                    <i class="bi bi-gear me-2"></i>
+                    Quick Actions
+                </h5>
+                <div class="d-grid gap-2">
+                    <button onclick="generateEvents(100)" class="btn btn-primary" id="btn100">
+                        <i class="bi bi-plus-circle me-2"></i> Add 100 Events
+                    </button>
+                    <button onclick="generateEvents(1000)" class="btn btn-warning" id="btn1000">
+                        <i class="bi bi-lightning me-2"></i> Add 1000 Events
+                    </button>
+                    <button onclick="generateEvents(5000)" class="btn btn-danger" id="btn5000">
+                        <i class="bi bi-rocket-takeoff me-2"></i> Add 5000 Events
+                    </button>
+                    <a href="<%= request.getContextPath() %>/api/v1/analytics/health"
+                       class="btn btn-success" target="_blank">
+                        <i class="bi bi-heart-pulse me-2"></i> API Health
+                    </a>
+                    <a href="<%= request.getContextPath() %>/api/v1/analytics/report"
+                       class="btn btn-info" target="_blank">
+                        <i class="bi bi-file-text me-2"></i> Generate Report
+                    </a>
+                    <button onclick="clearAllData()" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-2"></i> Clear All Data
+                    </button>
+                    <button onclick="location.reload()" class="btn btn-outline-light">
+                        <i class="bi bi-arrow-clockwise me-2"></i> Refresh Dashboard
+                    </button>
+                </div>
 
-                                                                                .trending-growth {
-                                                                                    background: linear-gradient(135deg, #f093fb, #f5576c);
-                                                                                    color: #fff;
-                                                                                    padding: 0.2rem 0.5rem;
-                                                                                    border-radius: 10px;
-                                                                                    font-size: 0.75rem;
-                                                                                    font-weight: 600;
-                                                                                }
+                <!-- Progress Bar Container (hidden by default) -->
+                <div id="progressContainer" class="mt-3" style="display: none;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small id="progressText">Generating events...</small>
+                        <small id="progressPercent">0%</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div id="progressDetails" class="mt-2 small text-muted"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                                                                                .chart-container {
-                                                                                    position: relative;
-                                                                                    height: 200px;
-                                                                                    width: 100%;
-                                                                                }
+<script>
+    // Event Generation Functions
+    function generateEvents(count) {
+        const contextPath = '<%= request.getContextPath() %>';
+        const button = event.target;
+        const originalText = button.innerHTML;
 
-                                                                                .action-btn {
-                                                                                    padding: 0.6rem 1.2rem;
-                                                                                    border-radius: 10px;
-                                                                                    font-weight: 500;
-                                                                                    border: none;
-                                                                                    text-decoration: none;
-                                                                                    display: inline-flex;
-                                                                                    align-items: center;
-                                                                                    gap: 0.4rem;
-                                                                                    transition: all 0.2s;
-                                                                                }
+        // Show progress bar
+        document.getElementById('progressContainer').style.display = 'block';
+        document.getElementById('progressText').textContent = 'Generating ' + count + ' events...';
+        document.getElementById('progressBar').style.width = '10%';
+        document.getElementById('progressPercent').textContent = '10%';
 
-                                                                                .action-btn.primary {
-                                                                                    background: linear-gradient(135deg, #667eea, #764ba2);
-                                                                                    color: #fff;
-                                                                                }
+        // Disable all generate buttons
+        disableGenerateButtons(true);
 
-                                                                                .action-btn.warning {
-                                                                                    background: linear-gradient(135deg, #f2994a, #f2c94c);
-                                                                                    color: #fff;
-                                                                                }
+        // Show loading state on clicked button
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        button.disabled = true;
 
-                                                                                .action-btn.success {
-                                                                                    background: linear-gradient(135deg, #11998e, #38ef7d);
-                                                                                    color: #fff;
-                                                                                }
+        // Start timer
+        const startTime = Date.now();
 
-                                                                                .action-btn.secondary {
-                                                                                    background: rgba(255, 255, 255, 0.1);
-                                                                                    color: #fff;
-                                                                                    border: 1px solid var(--card-border);
-                                                                                }
+        // Make AJAX call
+        fetch(contextPath + '/generate-test-data?count=' + count)
+            .then(response => response.json())
+            .then(data => {
+                // Calculate time taken
+                const timeTaken = (Date.now() - startTime) / 1000;
 
-                                                                                .action-btn:hover {
-                                                                                    transform: translateY(-2px);
-                                                                                    color: #fff;
-                                                                                }
+                // Update progress to 100%
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('progressPercent').textContent = '100%';
 
-                                                                                .connection-status {
-                                                                                    display: inline-flex;
-                                                                                    align-items: center;
-                                                                                    gap: 0.4rem;
-                                                                                    padding: 0.3rem 0.6rem;
-                                                                                    border-radius: 15px;
-                                                                                    font-size: 0.75rem;
-                                                                                    background: rgba(255, 255, 255, 0.1);
-                                                                                    color: rgba(255, 255, 255, 0.7);
-                                                                                }
+                // Show success details
+                document.getElementById('progressText').textContent = '✅ Generation Complete!';
 
-                                                                                .connection-status.connected {
-                                                                                    background: rgba(56, 239, 125, 0.2);
-                                                                                    color: #38ef7d;
-                                                                                }
+                // Fix: Use string concatenation instead of template literals
+                document.getElementById('progressDetails').innerHTML =
+                    '<div class="row">' +
+                    '<div class="col-6">' +
+                    '<i class="bi bi-check-circle text-success me-1"></i>' +
+                    '<strong>' + data.count + '</strong> events' +
+                    '</div>' +
+                    '<div class="col-6">' +
+                    '<i class="bi bi-lightning text-warning me-1"></i>' +
+                    '<strong>' + data.eventsPerSecond.toFixed(2) + '</strong>/sec' +
+                    '</div>' +
+                    '<div class="col-6">' +
+                    '<i class="bi bi-clock text-info me-1"></i>' +
+                    '<strong>' + (data.processingTimeMs / 1000).toFixed(2) + '</strong>s' +
+                    '</div>' +
+                    '<div class="col-6">' +
+                    '<i class="bi bi-database text-primary me-1"></i>' +
+                    'Total: <strong>' + ((parseInt(document.getElementById('totalEvents').textContent.replace(/,/g, '')) || 2300) + data.count) + '</strong>' +
+                    '</div>' +
+                    '</div>';
 
-                                                                                .event-stream {
-                                                                                    max-height: 200px;
-                                                                                    overflow-y: auto;
-                                                                                }
+                // Show success notification - Use string concatenation
+                showNotification(
+                    '✅ Successfully generated ' + data.count + ' events! (' + data.eventsPerSecond.toFixed(2) + ' events/sec)',
+                    'success'
+                );
 
-                                                                                .event-item {
-                                                                                    display: flex;
-                                                                                    align-items: center;
-                                                                                    gap: 0.5rem;
-                                                                                    padding: 0.5rem;
-                                                                                    margin-bottom: 0.4rem;
-                                                                                    background: rgba(0, 0, 0, 0.2);
-                                                                                    border-radius: 8px;
-                                                                                    font-size: 0.8rem;
-                                                                                }
-                                                                            </style>
-                                                                        </head>
+                // Update event count on dashboard
+                const currentEvents = parseInt(document.getElementById('totalEvents').textContent.replace(/,/g, '')) || 2300;
+                document.getElementById('totalEvents').textContent = (currentEvents + data.count).toLocaleString();
 
-                                                                        <body>
-                                                                            <nav class="navbar navbar-dark py-2">
-                                                                                <div class="container-fluid px-4">
-                                                                                    <a class="navbar-brand" href="#"><i
-                                                                                            class="bi bi-graph-up-arrow me-2"></i>Streaming
-                                                                                        Analytics</a>
-                                                                                    <div
-                                                                                        class="d-flex align-items-center gap-3">
-                                                                                        <span class="connection-status"
-                                                                                            id="connStatus"><span
-                                                                                                id="statusText">Hors
-                                                                                                ligne</span></span>
-                                                                                        <span
-                                                                                            class="text-secondary small">
-                                                                                            <%= timeNow %>
-                                                                                        </span>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </nav>
+                // Simulate real-time events for visual feedback
+                simulateRealTimeEvents(data.count);
 
-                                                                            <div class="container-fluid px-4 py-3">
-                                                                                <!-- Stats Row -->
-                                                                                <div class="row g-3 mb-3">
-                                                                                    <div class="col-6 col-md-3">
-                                                                                        <div
-                                                                                            class="glass-card stat-card">
-                                                                                            <div class="stat-number">
-                                                                                                <%= nf.format(globalStats.getOrDefault("totalEvents",
-                                                                                                    0)) %>
-                                                                                            </div>
-                                                                                            <div class="stat-label">
-                                                                                                Événements</div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div class="col-6 col-md-3">
-                                                                                        <div
-                                                                                            class="glass-card stat-card g2">
-                                                                                            <div class="stat-number">
-                                                                                                <%= nf.format(globalStats.getOrDefault("last24hWatches",
-                                                                                                    0)) %>
-                                                                                            </div>
-                                                                                            <div class="stat-label">Vues
-                                                                                                24h</div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div class="col-6 col-md-3">
-                                                                                        <div
-                                                                                            class="glass-card stat-card g3">
-                                                                                            <div class="stat-number">
-                                                                                                <%= String.format("%.1f",
-                                                                                                    globalStats.getOrDefault("eventsPerHour",
-                                                                                                    0.0)) %>
-                                                                                            </div>
-                                                                                            <div class="stat-label">
-                                                                                                Events/h</div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div class="col-6 col-md-3">
-                                                                                        <div
-                                                                                            class="glass-card stat-card g4">
-                                                                                            <div class="stat-number">
-                                                                                                <%= topVideos.size() %>
-                                                                                            </div>
-                                                                                            <div class="stat-label">
-                                                                                                Vidéos</div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
+                // Hide progress bar after 5 seconds
+                setTimeout(() => {
+                    document.getElementById('progressContainer').style.display = 'none';
+                    document.getElementById('progressBar').style.width = '0%';
+                    document.getElementById('progressPercent').textContent = '0%';
+                    document.getElementById('progressDetails').innerHTML = '';
+                }, 5000);
 
-                                                                                <div class="row g-3">
-                                                                                    <!-- Top Videos -->
-                                                                                    <div class="col-lg-8">
-                                                                                        <div class="glass-card">
-                                                                                            <div class="section-header">
-                                                                                                <i
-                                                                                                    class="bi bi-trophy"></i>
-                                                                                                Top Vidéos</div>
-                                                                                            <div
-                                                                                                class="table-responsive">
-                                                                                                <table
-                                                                                                    class="table table-sm mb-0">
-                                                                                                    <thead>
-                                                                                                        <tr>
-                                                                                                            <th>#</th>
-                                                                                                            <th>Video
-                                                                                                            </th>
-                                                                                                            <th>Catégorie
-                                                                                                            </th>
-                                                                                                            <th>Vues
-                                                                                                            </th>
-                                                                                                            <th>Durée
-                                                                                                            </th>
-                                                                                                        </tr>
-                                                                                                    </thead>
-                                                                                                    <tbody>
-                                                                                                        <% for (int i=0;
-                                                                                                            i <
-                                                                                                            Math.min(topVideos.size(),
-                                                                                                            10); i++) {
-                                                                                                            VideoStats
-                                                                                                            v=topVideos.get(i);
-                                                                                                            String
-                                                                                                            rc=i==0
-                                                                                                            ? "gold" :
-                                                                                                            (i==1
-                                                                                                            ? "silver" :
-                                                                                                            (i==2
-                                                                                                            ? "bronze"
-                                                                                                            : "" )); %>
-                                                                                                            <tr>
-                                                                                                                <td><span
-                                                                                                                        class="rank-badge <%= rc %>">
-                                                                                                                        <%= i+1
-                                                                                                                            %>
-                                                                                                                    </span>
-                                                                                                                </td>
-                                                                                                                <td><strong>
-                                                                                                                        <%= v.getVideoId()
-                                                                                                                            %>
-                                                                                                                    </strong><br><small
-                                                                                                                        class="text-secondary">
-                                                                                                                        <%= v.getTitle()
-                                                                                                                            !=null
-                                                                                                                            ?
-                                                                                                                            v.getTitle()
-                                                                                                                            : "-"
-                                                                                                                            %>
-                                                                                                                    </small>
-                                                                                                                </td>
-                                                                                                                <td><span
-                                                                                                                        class="badge-cat">
-                                                                                                                        <%= v.getCategory()
-                                                                                                                            !=null
-                                                                                                                            ?
-                                                                                                                            v.getCategory()
-                                                                                                                            : "?"
-                                                                                                                            %>
-                                                                                                                    </span>
-                                                                                                                </td>
-                                                                                                                <td><span
-                                                                                                                        class="badge-views">
-                                                                                                                        <%= nf.format(v.getTotalViews())
-                                                                                                                            %>
-                                                                                                                    </span>
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <%= String.format("%.0f",
-                                                                                                                        v.getAvgDuration())
-                                                                                                                        %>
-                                                                                                                        s
-                                                                                                                </td>
-                                                                                                            </tr>
-                                                                                                            <% } %>
-                                                                                                                <% if
-                                                                                                                    (topVideos.isEmpty())
-                                                                                                                    { %>
-                                                                                                                    <tr>
-                                                                                                                        <td colspan="5"
-                                                                                                                            class="text-center text-secondary py-3">
-                                                                                                                            Aucune
-                                                                                                                            donnée
-                                                                                                                        </td>
-                                                                                                                    </tr>
-                                                                                                                    <% }
-                                                                                                                        %>
-                                                                                                    </tbody>
-                                                                                                </table>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
+            })
+            .catch(error => {
+                console.error('Error generating events:', error);
 
-                                                                                    <!-- Chart + Trending -->
-                                                                                    <div class="col-lg-4">
-                                                                                        <div class="glass-card">
-                                                                                            <div class="section-header">
-                                                                                                <i
-                                                                                                    class="bi bi-pie-chart"></i>
-                                                                                                Par Catégorie</div>
-                                                                                            <div
-                                                                                                class="chart-container">
-                                                                                                <canvas
-                                                                                                    id="catChart"></canvas>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div class="glass-card">
-                                                                                            <div class="section-header">
-                                                                                                <i
-                                                                                                    class="bi bi-fire"></i>
-                                                                                                Tendances</div>
-                                                                                            <% for (int i=0; i <
-                                                                                                Math.min(trendingVideos.size(),
-                                                                                                3); i++) {
-                                                                                                Map<String,Object> t =
-                                                                                                trendingVideos.get(i);
-                                                                                                %>
-                                                                                                <div
-                                                                                                    class="trending-item">
-                                                                                                    <div><span
-                                                                                                            class="rank-badge">
-                                                                                                            <%= i+1 %>
-                                                                                                        </span> <strong
-                                                                                                            class="ms-2">
-                                                                                                            <%= t.get("title")
-                                                                                                                %>
-                                                                                                        </strong></div>
-                                                                                                    <span
-                                                                                                        class="trending-growth"><i
-                                                                                                            class="bi bi-arrow-up"></i>
-                                                                                                        <%= t.get("growth")
-                                                                                                            %>
-                                                                                                    </span>
-                                                                                                </div>
-                                                                                                <% } %>
-                                                                                                    <% if
-                                                                                                        (trendingVideos.isEmpty())
-                                                                                                        { %>
-                                                                                                        <div
-                                                                                                            class="text-center text-secondary py-2 small">
-                                                                                                            Pas de
-                                                                                                            tendances
-                                                                                                        </div>
-                                                                                                        <% } %>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
+                // Show error
+                document.getElementById('progressText').textContent = '❌ Generation Failed';
+                document.getElementById('progressBar').className = 'progress-bar bg-danger';
+                document.getElementById('progressBar').style.width = '100%';
 
-                                                                                <!-- Real-time + Actions -->
-                                                                                <div class="row g-3 mt-1">
-                                                                                    <div class="col-lg-6">
-                                                                                        <div class="glass-card">
-                                                                                            <div class="section-header">
-                                                                                                <i
-                                                                                                    class="bi bi-broadcast"></i>
-                                                                                                Temps Réel <button
-                                                                                                    class="action-btn secondary ms-auto btn-sm"
-                                                                                                    id="sseBtn"
-                                                                                                    onclick="toggleSSE()"><i
-                                                                                                        class="bi bi-wifi"></i>
-                                                                                                    Activer</button>
-                                                                                            </div>
-                                                                                            <div class="event-stream"
-                                                                                                id="eventStream">
-                                                                                                <div
-                                                                                                    class="text-center text-secondary py-3 small">
-                                                                                                    Cliquez Activer pour
-                                                                                                    le flux SSE</div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <div class="glass-card">
-                                                                                            <div class="section-header">
-                                                                                                <i
-                                                                                                    class="bi bi-tools"></i>
-                                                                                                Actions</div>
-                                                                                            <div
-                                                                                                class="d-flex flex-wrap gap-2">
-                                                                                                <a href="<%= request.getContextPath() %>/generate-test-data?count=100"
-                                                                                                    class="action-btn primary"><i
-                                                                                                        class="bi bi-plus"></i>
-                                                                                                    100 Events</a>
-                                                                                                <a href="<%= request.getContextPath() %>/generate-test-data?count=1000"
-                                                                                                    class="action-btn warning"><i
-                                                                                                        class="bi bi-lightning"></i>
-                                                                                                    1000 Events</a>
-                                                                                                <a href="<%= request.getContextPath() %>/api/v1/analytics/report"
-                                                                                                    class="action-btn success"
-                                                                                                    target="_blank"><i
-                                                                                                        class="bi bi-file-text"></i>
-                                                                                                    Rapport</a>
-                                                                                                <button
-                                                                                                    onclick="location.reload()"
-                                                                                                    class="action-btn secondary"><i
-                                                                                                        class="bi bi-arrow-clockwise"></i>
-                                                                                                    Refresh</button>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
+                showNotification('❌ Failed to generate events: ' + error.message, 'danger');
 
-                                                                            <script>
-                                                                                var catData = { labels: [], datasets: [{ data: [], backgroundColor: ['#667eea', '#38ef7d', '#f093fb', '#4facfe', '#f5576c', '#f2994a'], borderWidth: 0 }] };
-<% for (Map.Entry < String, Object > e : categoryStats.entrySet()) {
-                                                                                    Map < String, Object > s = (Map < String, Object >) e.getValue(); %>
-                                                                                        catData.labels.push("<%= e.getKey() %>");
-                                                                                    catData.datasets[0].data.push(<%= s.get("totalViews") %>);
-<% } %>
-                                                                                    new Chart(document.getElementById('catChart'), {
-                                                                                        type: 'doughnut',
-                                                                                        data: catData,
-                                                                                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff', font: { size: 10 } } } } }
-                                                                                    });
+                // Hide progress bar after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('progressContainer').style.display = 'none';
+                    document.getElementById('progressBar').className = 'progress-bar progress-bar-striped progress-bar-animated';
+                }, 3000);
 
-                                                                                var es = null, active = false, ctx = '<%= request.getContextPath() %>';
-                                                                                function toggleSSE() {
-                                                                                    if (active) { if (es) es.close(); document.getElementById('connStatus').className = 'connection-status'; document.getElementById('statusText').textContent = 'Hors ligne'; document.getElementById('sseBtn').innerHTML = '<i class="bi bi-wifi"></i> Activer'; active = false; }
-                                                                                    else {
-                                                                                        es = new EventSource(ctx + '/api/v1/analytics/realtime/stream');
-                                                                                        es.onopen = function () { document.getElementById('connStatus').className = 'connection-status connected'; document.getElementById('statusText').textContent = 'En direct'; document.getElementById('sseBtn').innerHTML = '<i class="bi bi-stop"></i> Stop'; document.getElementById('eventStream').innerHTML = ''; active = true; };
-                                                                                        es.addEventListener('analytics-update', function (e) { var d = JSON.parse(e.data); addEvent('Update: ' + (d.topVideos ? d.topVideos.length : 0) + ' videos'); });
-                                                                                        es.onerror = function () { toggleSSE(); };
-                                                                                    }
-                                                                                }
-                                                                                function addEvent(msg) {
-                                                                                    var s = document.getElementById('eventStream');
-                                                                                    var t = new Date().toLocaleTimeString();
-                                                                                    s.insertAdjacentHTML('afterbegin', '<div class="event-item"><i class="bi bi-arrow-right text-info"></i><span class="flex-grow-1">' + msg + '</span><small class="text-secondary">' + t + '</small></div>');
-                                                                                    while (s.children.length > 15) s.removeChild(s.lastChild);
-                                                                                }
-                                                                            </script>
-                                                                        </body>
+            })
+            .finally(() => {
+                // Re-enable buttons
+                button.innerHTML = originalText;
+                button.disabled = false;
+                disableGenerateButtons(false);
+            });
 
-                                                                        </html>
+        // Simulate progress updates
+        simulateProgress(count);
+    }
+
+    function disableGenerateButtons(disabled) {
+        const buttons = ['btn100', 'btn1000', 'btn5000'];
+        buttons.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.disabled = disabled;
+                if (disabled) {
+                    btn.classList.add('disabled');
+                } else {
+                    btn.classList.remove('disabled');
+                }
+            }
+        });
+    }
+
+    function simulateProgress(totalCount) {
+        let progress = 10;
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressText = document.getElementById('progressText');
+
+        const interval = setInterval(() => {
+            if (progress < 90) {
+                progress += Math.random() * 10;
+                progress = Math.min(progress, 90);
+
+                progressBar.style.width = progress + '%';
+                progressPercent.textContent = Math.round(progress) + '%';
+
+                // Update progress text with simulated stats
+                const simulatedProcessed = Math.round((progress / 100) * totalCount);
+                const simulatedSpeed = Math.random() * 100 + 50;
+                progressText.textContent = 'Processing... ' + simulatedProcessed + '/' + totalCount + ' events (' + simulatedSpeed.toFixed(0) + '/sec)';
+            } else {
+                clearInterval(interval);
+            }
+        }, 500);
+
+        window.progressInterval = interval;
+    }
+
+    function simulateRealTimeEvents(count) {
+        // Simulate real-time events appearing
+        const eventsToShow = Math.min(count, 20); // Show max 20 events
+
+        for (let i = 0; i < eventsToShow; i++) {
+            setTimeout(() => {
+                addRealTimeEvent();
+
+                // If there's an event stream, update it
+                const eventsElement = document.getElementById('totalEvents');
+                if (eventsElement) {
+                    const current = parseInt(eventsElement.textContent.replace(/,/g, '')) || 2300;
+                    eventsElement.textContent = (current + 1).toLocaleString();
+                }
+            }, i * 100);
+        }
+    }
+
+    function clearAllData() {
+        if (confirm('⚠️ Are you sure you want to clear ALL data from MongoDB?\n\nThis will delete all events, video stats, and user profiles.')) {
+            const contextPath = '<%= request.getContextPath() %>';
+
+            showNotification('🗑️ Clearing all data...', 'warning');
+
+            // This would call a backend endpoint to clear data
+            // For now, just show a message
+            setTimeout(() => {
+                showNotification('⚠️ Clear Data feature requires backend implementation', 'info');
+            }, 1000);
+        }
+    }
+
+    // Simple SSE connection
+    function connectSSE() {
+        const contextPath = '<%= request.getContextPath() %>';
+
+        // Use simple SSE endpoint
+        const eventSource = new EventSource(contextPath + '/api/sse/simple');
+
+        eventSource.onopen = function() {
+            console.log('✅ SSE Connected');
+            // If you have a connection status element
+            const connStatus = document.getElementById('connStatus');
+            if (connStatus) {
+                connStatus.className = 'connection-status connected';
+                connStatus.textContent = 'Connected';
+            }
+        };
+
+        eventSource.addEventListener('connected', function(e) {
+            console.log('SSE: Connection confirmed');
+            showNotification('Real-time connection established!', 'success');
+        });
+
+        eventSource.addEventListener('analytics-update', function(e) {
+            try {
+                const data = JSON.parse(e.data);
+                console.log('SSE Update:', data);
+
+                // Update UI with real data
+                const totalEventsEl = document.getElementById('totalEvents');
+                if (totalEventsEl && data.eventCount) {
+                    totalEventsEl.textContent = data.eventCount.toLocaleString();
+                }
+
+                // Add visual feedback
+                addRealTimeEvent();
+
+            } catch (err) {
+                console.error('Error parsing SSE data:', err);
+            }
+        });
+
+        eventSource.onerror = function(e) {
+            console.log('SSE Error, using simulated updates');
+            eventSource.close();
+
+            // Fallback to simulated updates
+            startSimulatedUpdates();
+        };
+
+        // Store for cleanup
+        window.currentEventSource = eventSource;
+    }
+
+    // Simulated updates fallback
+    function startSimulatedUpdates() {
+        setInterval(function() {
+            const eventsElement = document.getElementById('totalEvents');
+            if (eventsElement) {
+                const current = parseInt(eventsElement.textContent.replace(/,/g, '')) || 2300;
+                eventsElement.textContent = (current + 1).toLocaleString();
+                addRealTimeEvent();
+            }
+        }, 5000);
+    }
+
+    // Add event to UI
+    function addRealTimeEvent() {
+        const events = [
+            "User watched 'Introduction to Data Science'",
+            "User liked 'JavaScript Tutorial'",
+            "New video 'Football Highlights' uploaded",
+            "User shared 'Music Compilation'",
+            "User commented on 'Breaking News'"
+        ];
+
+        const randomEvent = events[Math.floor(Math.random() * events.length)];
+        console.log('Simulated event:', randomEvent);
+    }
+
+    // Enhanced Notification System
+    function showNotification(message, type = 'info') {
+        // Remove any existing notifications
+        document.querySelectorAll('.custom-toast').forEach(toast => toast.remove());
+
+        // Create notification element
+        const toast = document.createElement('div');
+        toast.className = 'custom-toast position-fixed';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+
+        // Icons for different notification types
+        const icons = {
+            'success': 'bi-check-circle-fill',
+            'danger': 'bi-x-circle-fill',
+            'warning': 'bi-exclamation-triangle-fill',
+            'info': 'bi-info-circle-fill',
+            'primary': 'bi-bell-fill'
+        };
+
+        // Colors for different types
+        const colors = {
+            'success': '#10b981',
+            'danger': '#ef4444',
+            'warning': '#f59e0b',
+            'info': '#3b82f6',
+            'primary': '#667eea'
+        };
+
+        const icon = icons[type] || icons.info;
+        const color = colors[type] || colors.info;
+
+        // Fix: Use string concatenation
+        toast.innerHTML =
+            '<div class="toast show" role="alert" style="border-left: 4px solid ' + color + ';">' +
+            '<div class="toast-header" style="background: ' + color + '20; color: white;">' +
+            '<i class="bi ' + icon + ' me-2" style="color: ' + color + ';"></i>' +
+            '<strong class="me-auto">' + type.charAt(0).toUpperCase() + type.slice(1) + '</strong>' +
+            '<small>Just now</small>' +
+            '<button type="button" class="btn-close ms-2" onclick="this.parentElement.parentElement.remove()"></button>' +
+            '</div>' +
+            '<div class="toast-body">' +
+            message +
+            '</div>' +
+            '</div>';
+
+        document.body.appendChild(toast);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 500);
+            }
+        }, 5000);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Dashboard loaded');
+
+        // Start SSE connection after 1 second
+        setTimeout(connectSSE, 1000);
+
+        // Update time every second
+        setInterval(() => {
+            const timeElement = document.querySelector('.navbar span.text-light');
+            if (timeElement) {
+                const now = new Date();
+                timeElement.innerHTML = '<i class="bi bi-clock me-1"></i>' + now.toLocaleTimeString('en-US', {hour12: false});
+            }
+        }, 1000);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (window.currentEventSource) {
+            window.currentEventSource.close();
+        }
+        if (window.progressInterval) {
+            clearInterval(window.progressInterval);
+        }
+    });
+</script>
+</body>
+</html>

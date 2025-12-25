@@ -1,13 +1,10 @@
 package org.example.tpstreaminganalytics.api;
 
-// ADD THIS IMPORT
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.example.tpstreaminganalytics.service.EventProcessorService;
 import org.example.tpstreaminganalytics.entity.ViewEvent;
 
 import javax.inject.Inject;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,15 +14,16 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@WebServlet("/generate-test-data")
-public class DataGeneratorServlet extends HttpServlet {
+@WebServlet("/api/generate-events")
+public class EventGeneratorApiServlet extends HttpServlet {
 
     @Inject
     EventProcessorService eventProcessor;
 
-    // ADD ObjectMapper for proper JSON
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Random random = new Random();
 
+    // Copy these constants from your existing DataGeneratorServlet
     private static final String[] ACTIONS = { "WATCH", "PAUSE", "STOP", "LIKE", "SHARE" };
     private static final String[] QUALITIES = { "1080p", "720p", "480p", "360p" };
     private static final String[] DEVICES = { "mobile", "desktop", "tablet", "tv" };
@@ -38,23 +36,23 @@ public class DataGeneratorServlet extends HttpServlet {
             "user_006", "user_007", "user_008", "user_009", "user_010"
     };
 
-    private final Random random = new Random();
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+            throws IOException {
 
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+
         PrintWriter out = resp.getWriter();
 
-        // Get count parameter (default: 100)
+        // Get count parameter
         String countParam = req.getParameter("count");
         int count = 100;
         try {
             if (countParam != null && !countParam.isEmpty()) {
                 count = Integer.parseInt(countParam);
-                count = Math.min(count, 10000); // Max 10K events at once
+                count = Math.min(count, 5000); // Reasonable limit
             }
         } catch (NumberFormatException e) {
             // Use default
@@ -69,65 +67,52 @@ public class DataGeneratorServlet extends HttpServlet {
             // Process in batch
             if (eventProcessor != null) {
                 eventProcessor.processBatch(events);
-            } else {
-                // Return proper JSON error
-                Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put("error", "EventProcessor not available - CDI injection failed");
-                errorResponse.put("status", "error");
-
-                out.print(objectMapper.writeValueAsString(errorResponse));
-                return;
             }
 
             long processingTime = System.currentTimeMillis() - startTime;
             double eventsPerSecond = count * 1000.0 / Math.max(1, processingTime);
 
-            // Build response as Map (will be converted to proper JSON)
-            Map<String, Object> response = new HashMap<>();
+            // Create response map
+            Map<String, Object> response = new LinkedHashMap<>();
             response.put("status", "success");
             response.put("message", "Generated and processed " + count + " test events");
             response.put("count", count);
             response.put("processingTimeMs", processingTime);
             response.put("eventsPerSecond", eventsPerSecond);
             response.put("timestamp", LocalDateTime.now().toString());
+            response.put("generatedEvents", events.size());
 
-            // Write proper JSON using ObjectMapper
-            out.print(objectMapper.writeValueAsString(response));
+            // Convert to proper JSON
+            String jsonResponse = objectMapper.writeValueAsString(response);
+            out.print(jsonResponse);
 
         } catch (Exception e) {
             resp.setStatus(500);
-            // Return proper JSON error
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
+            Map<String, Object> errorResponse = new LinkedHashMap<>();
             errorResponse.put("status", "error");
+            errorResponse.put("message", e.getMessage());
             errorResponse.put("timestamp", LocalDateTime.now().toString());
 
-            out.print(objectMapper.writeValueAsString(errorResponse));
-            e.printStackTrace();
+            String jsonError = objectMapper.writeValueAsString(errorResponse);
+            out.print(jsonError);
         }
 
         out.close();
     }
 
-    /**
-     * Generate random test events
-     */
     private List<ViewEvent> generateEvents(int count) {
         List<ViewEvent> events = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
             ViewEvent event = new ViewEvent();
-
-            event.setEventId(
-                    "gen_evt_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 6));
+            event.setEventId("api_evt_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 6));
             event.setUserId(USER_IDS[random.nextInt(USER_IDS.length)]);
             event.setVideoId(VIDEO_IDS[random.nextInt(VIDEO_IDS.length)]);
             event.setTimestamp(LocalDateTime.now().minusMinutes(random.nextInt(60)));
             event.setAction(ACTIONS[random.nextInt(ACTIONS.length)]);
-            event.setDuration(random.nextInt(3600)); // 0-3600 seconds
+            event.setDuration(random.nextInt(3600));
             event.setQuality(QUALITIES[random.nextInt(QUALITIES.length)]);
             event.setDeviceType(DEVICES[random.nextInt(DEVICES.length)]);
-
             events.add(event);
         }
 
